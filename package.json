@@ -1,5 +1,5 @@
 {
-  "name": "EcommerceSmartContract",
+  "name": "ecommercesmartcontract",
   "version": "1.0.0",
   "main": "index.js",
   "repository": "https://github.com/kihiuFrank/EcommerceSmartContract.git",
@@ -18,8 +18,12 @@
     "chai": "^4.3.7",
     "ethers": "^6.1.0",
     "hardhat": "^2.13.0",
+    "hardhat-deploy": "^0.11.25",
     "hardhat-gas-reporter": "^1.0.9",
     "solidity-coverage": "^0.8.2",
     "typechain": "^8.1.1"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3"
   }
 }
