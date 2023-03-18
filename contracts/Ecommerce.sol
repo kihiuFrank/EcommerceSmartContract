@@ -16,6 +16,10 @@ contract Ecommerce {
     Product[] public products;
     uint counter = 1;
 
+    //errors
+    error Ecommerce__PriceMustBeGreater0();
+    error Ecommerce__PriceNotMet();
+
     // events
     event Registered(string title, uint productId, address seller);
     event Bought(uint productId, address buyer);
@@ -28,7 +32,10 @@ contract Ecommerce {
         string memory _description,
         uint _price
     ) public {
-        require(_price > 0, "Price has to be greater than 0!");
+        //require(_price > 0, "Price has to be greater than 0!");
+        if (_price <= 0) {
+            revert Ecommerce__PriceMustBeGreater0();
+        }
 
         Product memory tempProduct;
         tempProduct.title = _title;
@@ -43,10 +50,14 @@ contract Ecommerce {
     }
 
     function buy(uint _productId) public payable {
-        require(
+        /* require(
             products[_productId - 1].price == msg.value,
             "Please pay the exact price"
-        );
+        ); */
+
+        if (products[_productId - 1].price != msg.value) {
+            revert Ecommerce__PriceNotMet();
+        }
         require(
             products[_productId - 1].seller != msg.sender,
             "You can't buy your own products!"
