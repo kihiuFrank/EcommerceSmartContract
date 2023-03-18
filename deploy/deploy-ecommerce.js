@@ -7,7 +7,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const { deployer } = await getNamedAccounts()
     log("-----------------------------------------------------")
     const args = []
-    const ecommerce = deploy("Ecommerce", {
+    const ecommerce = await deploy("Ecommerce", {
         from: deployer,
         args: args,
         log: true,
@@ -15,7 +15,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     })
 
     // verify contract
-    if (!developmentChains.includes(network.name && process.env.ETHERSCAN_API_KEY)) {
+    if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
         log("Verifying.....")
         await verify(ecommerce.address, args)
     }

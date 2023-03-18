@@ -7,10 +7,11 @@ const { developmentChains } = require("../../helper-hardhat-config")
     : describe("Ecommerce Unit Tests", () => {
           let accounts, deployer, ecommerce
           beforeEach("Runs before every test", async () => {
-              accounts = await ethers.getSigners
-              deployer = accounts[0]
+              //accounts = await ethers.getSigners
+              //deployer = accounts[0]
+              deployer = (await getNamedAccounts()).deployer
               await deployments.fixture(["all"])
-              ecommerce = await ethers.getContract("Ecommerce")
+              ecommerce = await ethers.getContract("Ecommerce", deployer)
           })
 
           it("deploys succefully", () => {
