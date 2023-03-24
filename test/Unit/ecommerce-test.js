@@ -42,7 +42,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
           describe("Buying a Product", () => {
               it("checks that buyer pays exact price", async () => {
                   const productId = 1
-                  //const testPrice = ethers.utils.parseEther("1")
+                  const testPrice = ethers.utils.parseEther("0")
                   // connect the buyer/player
                   const playerConnectedEcommerce = ecommerce.connect(player)
 
@@ -52,8 +52,10 @@ const { developmentChains } = require("../../helper-hardhat-config")
                   // buy
                   console.log("Now we buy")
                   await expect(
-                      playerConnectedEcommerce.buy(productId)
+                      playerConnectedEcommerce.buy(productId, { value: testPrice })
                   ).to.be.revertedWithCustomError(ecommerce, "Ecommerce__PriceNotMet")
+
+                  // Passes even with the testPrice as 0eth. It should fail.
               })
 
               it("checks that seller cannot be the buyer ", async () => {
@@ -61,6 +63,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
                   // first register product
                   await ecommerce.registerProduct(TITLE, DESCRIPTION, PRICE)
                   // buy
+                  // should revert if the same person who registered(seller), tries to buy
                   await expect(
                       ecommerce.buy(productId, { value: PRICE })
                   ).to.be.revertedWithCustomError(ecommerce, "Ecommerce__SellerCannotBeBuyer")
