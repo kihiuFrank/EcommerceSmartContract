@@ -38,6 +38,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
               })
           })
 
+          // Needs revisting
           describe("Buying a Product", () => {
               it("checks that buyer pays exact price", async () => {
                   const productId = 1
@@ -53,6 +54,27 @@ const { developmentChains } = require("../../helper-hardhat-config")
                   await expect(
                       playerConnectedEcommerce.buy(productId)
                   ).to.be.revertedWithCustomError(ecommerce, "Ecommerce__PriceNotMet")
+              })
+
+              it("checks that seller cannot be the buyer ", async () => {
+                  const productId = 1
+                  // first register product
+                  await ecommerce.registerProduct(TITLE, DESCRIPTION, PRICE)
+                  // buy
+                  await expect(
+                      ecommerce.buy(productId, { value: PRICE })
+                  ).to.be.revertedWithCustomError(ecommerce, "Ecommerce__SellerCannotBeBuyer")
+              })
+
+              it("checks that product is bought successfully and emits event", async () => {
+                  const productId = 1
+                  // connect the buyer/player
+                  const playerConnectedEcommerce = ecommerce.connect(player)
+                  // first register product
+                  await ecommerce.registerProduct(TITLE, DESCRIPTION, PRICE)
+                  // buy
+                  console.log("Now we buy")
+                  await expect(playerConnectedEcommerce.buy(productId)).to.emit("Bought")
               })
           })
       })

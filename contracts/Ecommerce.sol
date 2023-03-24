@@ -19,6 +19,7 @@ contract Ecommerce {
     //errors
     error Ecommerce__PriceMustBeGreater0();
     error Ecommerce__PriceNotMet();
+    error Ecommerce__SellerCannotBeBuyer();
 
     // events
     event Registered(string title, uint productId, address seller);
@@ -46,6 +47,8 @@ contract Ecommerce {
         products.push(tempProduct);
         counter++;
 
+        //products[tempProduct.productId - 1].seller = payable(msg.sender);
+
         emit Registered(_title, tempProduct.productId, msg.sender);
     }
 
@@ -58,10 +61,15 @@ contract Ecommerce {
         if (products[_productId - 1].price != msg.value) {
             revert Ecommerce__PriceNotMet();
         }
-        require(
+
+        /* require(
             products[_productId - 1].seller != msg.sender,
             "You can't buy your own products!"
-        );
+        ); */
+
+        if (products[_productId - 1].seller == msg.sender) {
+            revert Ecommerce__SellerCannotBeBuyer();
+        }
         products[_productId - 1].buyer = msg.sender;
 
         emit Bought(_productId, msg.sender);
