@@ -41,7 +41,7 @@ contract Ecommerce {
         Product memory tempProduct;
         tempProduct.title = _title;
         tempProduct.description = _description;
-        tempProduct.price = _price * 10 ** 18;
+        tempProduct.price = _price;
         tempProduct.seller = payable(msg.sender);
         tempProduct.productId = counter;
         products.push(tempProduct);
