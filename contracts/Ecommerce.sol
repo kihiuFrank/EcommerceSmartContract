@@ -20,6 +20,7 @@ contract Ecommerce {
     error Ecommerce__PriceMustBeGreater0();
     error Ecommerce__PriceNotMet();
     error Ecommerce__SellerCannotBeBuyer();
+    error Ecommerce__NotBuyer();
 
     // events
     event Registered(string title, uint productId, address seller);
@@ -76,15 +77,28 @@ contract Ecommerce {
     }
 
     function delivery(uint _productId) public {
-        require(
+        /* require(
             products[_productId - 1].buyer == msg.sender,
             "only the buyer can call this fuction"
-        );
+        ); */
+
+        if (products[_productId - 1].buyer != msg.sender) {
+            revert Ecommerce__NotBuyer();
+        }
+
         products[_productId - 1].delivered = true;
         products[_productId - 1].seller.transfer(
             products[_productId - 1].price // we can charge a fee for the buyer's using our platform at this point eg. (price * 98%)
         );
 
         emit Delivered(_productId);
+    }
+
+    //////////////////
+    // Getter Functions
+    //////////////////
+
+    function getBalance(address seller) external view returns (uint256) {
+        return seller.balance;
     }
 }

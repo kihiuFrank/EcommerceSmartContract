@@ -80,4 +80,67 @@ const { developmentChains } = require("../../helper-hardhat-config")
                   )
               })
           })
+
+          describe("marking develivered", () => {
+              it("checks that only buyer can mark delivered", async () => {
+                  const productId = 1
+                  // connect the buyer/player
+                  const playerConnectedEcommerce = ecommerce.connect(player)
+                  // first register product
+                  await ecommerce.registerProduct(TITLE, DESCRIPTION, PRICE)
+                  // buy
+                  await playerConnectedEcommerce.buy(productId, { value: PRICE })
+
+                  // seller calls delivery and hence it should revert
+                  await expect(ecommerce.delivery(productId)).to.be.revertedWithCustomError(
+                      ecommerce,
+                      "Ecommerce__NotBuyer"
+                  )
+              })
+
+              it("checks that the amount is transfered to seller", async () => {
+                  const initialBalance = await ecommerce.provider.getBalance(deployer.address)
+                  console.log(`Intial Balance is ${initialBalance}`)
+                  const productId = 1
+                  // connect the buyer/player
+                  const playerConnectedEcommerce = ecommerce.connect(player)
+                  // first register product
+                  await ecommerce.registerProduct(TITLE, DESCRIPTION, PRICE)
+                  // buy
+                  await playerConnectedEcommerce.buy(productId, { value: PRICE })
+                  // delivered
+                  const transactionResponse = await playerConnectedEcommerce.delivery(productId)
+                  const transactionReceipt = await transactionResponse.wait(1)
+                  const { gasUsed, effectiveGasPrice } = transactionReceipt
+                  const gasCost = gasUsed.mul(effectiveGasPrice)
+
+                  const finalBalance = await ecommerce.provider.getBalance(deployer.address)
+                  console.log(`Final balance is ${finalBalance}`)
+
+                  assert.equal(
+                      finalBalance - initialBalance + gasCost.toString(),
+                      (PRICE * 10 ** 18).toString()
+                  )
+
+                  /* 
+                   AssertionError: expected '99970053913863780072069743701212' to equal '1000000000000000000'
+      + expected - actual
+
+      -99970053913863780072069743701212
+      +1000000000000000000
+                  */
+              })
+
+              it("checks that it delivers and emits an event ", async () => {
+                  const productId = 1
+                  // connect the buyer/player
+                  const playerConnectedEcommerce = ecommerce.connect(player)
+                  // first register product
+                  await ecommerce.registerProduct(TITLE, DESCRIPTION, PRICE)
+                  // buy
+                  await playerConnectedEcommerce.buy(productId, { value: PRICE })
+
+                  expect(await playerConnectedEcommerce.delivery(productId)).to.emit("Delivered")
+              })
+          })
       })
