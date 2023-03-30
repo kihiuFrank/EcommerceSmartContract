@@ -110,6 +110,9 @@ const { developmentChains } = require("../../helper-hardhat-config")
                   expect(await playerConnectedEcommerce.delivery(productId)).to.emit("Delivered")
               })
 
+              //////////////////////////////////
+              ////////// REVIST ////////////////
+              //////////////////////////////////
               it("checks that the amount is transfered to seller", async () => {
                   const initialBalance = await ecommerce.provider.getBalance(deployer.address)
                   console.log(`Intial Balance is ${initialBalance}`)
@@ -143,6 +146,9 @@ const { developmentChains } = require("../../helper-hardhat-config")
                   )
               })
 
+              //////////////////////////////////
+              ////////// REVIST ////////////////
+              //////////////////////////////////
               it("transfers the amounts to the manager", async () => {
                   const initialBalance = await ecommerce.provider.getBalance(deployer.address)
                   console.log(`Intial Balance is ${initialBalance}`)
@@ -157,6 +163,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
                   await ecommerce.destroy()
 
                   const finalBalance = await ecommerce.provider.getBalance(deployer.address)
+                  console.log(`Final balance is ${finalBalance}`)
                   expect(finalBalance > initialBalance)
               })
           })
