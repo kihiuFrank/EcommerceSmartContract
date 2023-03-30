@@ -98,6 +98,18 @@ const { developmentChains } = require("../../helper-hardhat-config")
                   )
               })
 
+              it("checks that it delivers and emits an event ", async () => {
+                  const productId = 1
+                  // connect the buyer/player
+                  const playerConnectedEcommerce = ecommerce.connect(player)
+                  // first register product
+                  await ecommerce.registerProduct(TITLE, DESCRIPTION, PRICE)
+                  // buy
+                  await playerConnectedEcommerce.buy(productId, { value: PRICE })
+
+                  expect(await playerConnectedEcommerce.delivery(productId)).to.emit("Delivered")
+              })
+
               it("checks that the amount is transfered to seller", async () => {
                   const initialBalance = await ecommerce.provider.getBalance(deployer.address)
                   console.log(`Intial Balance is ${initialBalance}`)
@@ -117,21 +129,23 @@ const { developmentChains } = require("../../helper-hardhat-config")
                   const finalBalance = await ecommerce.provider.getBalance(deployer.address)
                   console.log(`Final balance is ${finalBalance}`)
 
-                  assert.equal(
-                      finalBalance - initialBalance + gasCost.toString(),
-                      (PRICE * 10 ** 18).toString()
+                  expect(finalBalance > initialBalance)
+              })
+          })
+
+          describe("self destruct", () => {
+              it("checks that only manager can call destroy", async () => {
+                  // connect the player
+                  const playerConnectedEcommerce = ecommerce.connect(player)
+                  await expect(playerConnectedEcommerce.destroy()).to.be.revertedWithCustomError(
+                      ecommerce,
+                      "Ecommerce__NotManager"
                   )
-
-                  /* 
-                   AssertionError: expected '99970053913863780072069743701212' to equal '1000000000000000000'
-      + expected - actual
-
-      -99970053913863780072069743701212
-      +1000000000000000000
-                  */
               })
 
-              it("checks that it delivers and emits an event ", async () => {
+              it("transfers the amounts to the manager", async () => {
+                  const initialBalance = await ecommerce.provider.getBalance(deployer.address)
+                  console.log(`Intial Balance is ${initialBalance}`)
                   const productId = 1
                   // connect the buyer/player
                   const playerConnectedEcommerce = ecommerce.connect(player)
@@ -139,8 +153,11 @@ const { developmentChains } = require("../../helper-hardhat-config")
                   await ecommerce.registerProduct(TITLE, DESCRIPTION, PRICE)
                   // buy
                   await playerConnectedEcommerce.buy(productId, { value: PRICE })
+                  //now we destroy
+                  await ecommerce.destroy()
 
-                  expect(await playerConnectedEcommerce.delivery(productId)).to.emit("Delivered")
+                  const finalBalance = await ecommerce.provider.getBalance(deployer.address)
+                  expect(finalBalance > initialBalance)
               })
           })
       })

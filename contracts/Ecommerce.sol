@@ -15,19 +15,23 @@ contract Ecommerce {
 
     Product[] public products;
     uint counter = 1;
+    address payable public manager;
 
     //errors
     error Ecommerce__PriceMustBeGreater0();
     error Ecommerce__PriceNotMet();
     error Ecommerce__SellerCannotBeBuyer();
     error Ecommerce__NotBuyer();
+    error Ecommerce__NotManager();
 
     // events
     event Registered(string title, uint productId, address seller);
     event Bought(uint productId, address buyer);
     event Delivered(uint productId);
 
-    constructor() {}
+    constructor() {
+        manager = payable(msg.sender);
+    }
 
     function registerProduct(
         string memory _title,
@@ -92,6 +96,14 @@ contract Ecommerce {
         );
 
         emit Delivered(_productId);
+    }
+
+    function destroy() public {
+        // require(manager == msg.sender, "Only manager can call this fuction");
+        if (manager != msg.sender) {
+            revert Ecommerce__NotManager();
+        }
+        selfdestruct(manager);
     }
 
     //////////////////
