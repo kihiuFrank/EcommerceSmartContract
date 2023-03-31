@@ -16,6 +16,7 @@ contract Ecommerce {
     Product[] public products;
     uint counter = 1;
     address payable public manager;
+    bool isDestroyed = false;
 
     //errors
     error Ecommerce__PriceMustBeGreater0();
@@ -29,6 +30,11 @@ contract Ecommerce {
     event Bought(uint productId, address buyer);
     event Delivered(uint productId);
 
+    modifier isNotDestroyed() {
+        require(!isDestroyed, "Contract does not exist");
+        _;
+    }
+
     constructor() {
         manager = payable(msg.sender);
     }
@@ -37,7 +43,7 @@ contract Ecommerce {
         string memory _title,
         string memory _description,
         uint _price
-    ) public {
+    ) public isNotDestroyed {
         //require(_price > 0, "Price has to be greater than 0!");
         if (_price <= 0) {
             revert Ecommerce__PriceMustBeGreater0();
@@ -57,7 +63,7 @@ contract Ecommerce {
         emit Registered(_title, tempProduct.productId, msg.sender);
     }
 
-    function buy(uint _productId) public payable {
+    function buy(uint _productId) public payable isNotDestroyed {
         /* require(
             products[_productId - 1].price == msg.value,
             "Please pay the exact price"
@@ -80,7 +86,7 @@ contract Ecommerce {
         emit Bought(_productId, msg.sender);
     }
 
-    function delivery(uint _productId) public {
+    function delivery(uint _productId) public isNotDestroyed {
         /* require(
             products[_productId - 1].buyer == msg.sender,
             "only the buyer can call this fuction"
@@ -98,18 +104,39 @@ contract Ecommerce {
         emit Delivered(_productId);
     }
 
-    function destroy() public {
+    /* function destroy() public {
         // require(manager == msg.sender, "Only manager can call this fuction");
         if (manager != msg.sender) {
             revert Ecommerce__NotManager();
         }
         selfdestruct(manager);
+    } */
+
+    // solution 1 to avoid users losing money due to sending money to a destroyed contract
+    function destroy() public isNotDestroyed {
+        // require(manager == msg.sender, "Only manager can call this fuction");
+        if (manager != msg.sender) {
+            revert Ecommerce__NotManager();
+        }
+        manager.transfer(address(this).balance);
+        // now destroy
+        isDestroyed = true;
+        selfdestruct(manager);
+    }
+
+    // solution 2
+    fallback() external payable {
+        //we send the ether back to their account since the contract is destroyed
+        payable(msg.sender).transfer(msg.value);
+    }
+
+    receive() external payable {
+        payable(msg.sender).transfer(msg.value);
     }
 
     //////////////////
     // Getter Functions
     //////////////////
-
     function getBalance(address seller) external view returns (uint256) {
         return seller.balance;
     }
